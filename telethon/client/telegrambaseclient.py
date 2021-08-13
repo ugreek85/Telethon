@@ -233,6 +233,7 @@ class TelegramBaseClient(abc.ABC):
             app_version: str = None,
             lang_code: str = 'en',
             system_lang_code: str = 'en',
+            lang_pack: str = '',
             loop: asyncio.AbstractEventLoop = None,
             base_logger: typing.Union[str, logging.Logger] = None):
         if not api_id or not api_hash:
@@ -361,7 +362,7 @@ class TelegramBaseClient(abc.ABC):
             app_version=app_version or self.__version__,
             lang_code=lang_code,
             system_lang_code=system_lang_code,
-            lang_pack='',  # "langPacks are for official apps only"
+            lang_pack=lang_pack,  # "langPacks are for official apps only"
             query=None,
             proxy=init_proxy
         )
