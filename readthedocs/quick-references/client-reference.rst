@@ -32,7 +32,6 @@ Auth
     send_code_request
     sign_in
     qr_login
-    sign_up
     log_out
     edit_2fa
 
@@ -169,6 +168,7 @@ Updates
     remove_event_handler
     list_event_handlers
     catch_up
+    set_receive_updates
 
 Bots
 ----

@@ -4,7 +4,7 @@ import re
 import asyncio
 
 from .common import EventBuilder, EventCommon, name_inner_event
-from .. import utils
+from .. import utils, helpers
 from ..tl import types, functions, custom
 from ..tl.custom.sendergetter import SenderGetter
 
@@ -99,7 +99,7 @@ class InlineQuery(EventBuilder):
         def _set_client(self, client):
             super()._set_client(client)
             self._sender, self._input_sender = utils._get_entity_pair(
-                self.sender_id, self._entities, client._entity_cache)
+                self.sender_id, self._entities, client._mb_entity_cache)
 
         @property
         def id(self):
@@ -130,7 +130,7 @@ class InlineQuery(EventBuilder):
             and the user's device is able to send it, this will return
             the :tl:`GeoPoint` with the position of the user.
             """
-            return
+            return self.query.geo
 
         @property
         def builder(self):
@@ -174,9 +174,9 @@ class InlineQuery(EventBuilder):
 
                 gallery (`bool`, optional):
                     Whether the results should show as a gallery (grid) or not.
-                
+
                 next_offset (`str`, optional):
-                    The offset the client will send when the user scrolls the 
+                    The offset the client will send when the user scrolls the
                     results and it repeats the request.
 
                 private (`bool`, optional):
@@ -242,6 +242,6 @@ class InlineQuery(EventBuilder):
             if inspect.isawaitable(obj):
                 return asyncio.ensure_future(obj)
 
-            f = asyncio.get_event_loop().create_future()
+            f = helpers.get_running_loop().create_future()
             f.set_result(obj)
             return f

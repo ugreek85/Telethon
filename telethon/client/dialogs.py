@@ -58,6 +58,8 @@ class _DialogsIter(RequestIter):
                     for x in itertools.chain(r.users, r.chats)
                     if not isinstance(x, (types.UserEmpty, types.ChatEmpty))}
 
+        self.client._mb_entity_cache.extend(r.users, r.chats)
+
         messages = {}
         for m in r.messages:
             m._finish_init(self.client, entities, None)
@@ -82,14 +84,16 @@ class _DialogsIter(RequestIter):
 
                 cd = custom.Dialog(self.client, d, entities, message)
                 if cd.dialog.pts:
-                    self.client._channel_pts[cd.id] = cd.dialog.pts
+                    self.client._message_box.try_set_channel_state(
+                        utils.get_peer_id(d.peer, add_mark=False), cd.dialog.pts)
 
                 if not self.ignore_migrated or getattr(
                         cd.entity, 'migrated_to', None) is None:
                     self.buffer.append(cd)
 
-        if len(r.dialogs) < self.request.limit\
+        if not self.buffer or len(r.dialogs) < self.request.limit\
                 or not isinstance(r, types.messages.DialogsSlice):
+            # Buffer being empty means all returned dialogs were skipped (due to offsets).
             # Less than we requested means we reached the end, or
             # we didn't get a DialogsSlice which means we got all.
             return True
@@ -481,6 +485,16 @@ class DialogMethods:
         """
         Creates a `Conversation <telethon.tl.custom.conversation.Conversation>`
         with the given entity.
+
+        .. note::
+
+            This Conversation API has certain shortcomings, such as lacking
+            persistence, poor interaction with other event handlers, and
+            overcomplicated usage for anything beyond the simplest case.
+
+            If you plan to interact with a bot without handlers, this works
+            fine, but when running a bot yourself, you may instead prefer
+            to follow the advice from https://stackoverflow.com/a/62246569/.
 
         This is not the same as just sending a message to create a "dialog"
         with them, but rather a way to easily send messages and await for
